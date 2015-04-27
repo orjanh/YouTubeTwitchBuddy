@@ -16,13 +16,13 @@ The channel name is the last part of the URL.
 
 In this case, the YouTube settings in App.config (channel names are separated by '|'):
 
-<add key="YouTubeChannels" value="Microsoft|Apple"/>
+`<add key="YouTubeChannels" value="Microsoft|Apple"/>`
 
 ##### Twitch
 
 The same goes for Twitch channels (e.g. http://www.twitch.tv/microsoft/):
 
-<add key="TwitchChannels" value="Microsoft|Apple"/>
+`<add key="TwitchChannels" value="Microsoft|Apple"/>`
 
 ### Contact
 
