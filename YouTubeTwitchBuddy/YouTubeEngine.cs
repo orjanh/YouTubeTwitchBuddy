@@ -78,6 +78,7 @@ namespace YouTubeLister
 
 
 
+            int channelIndex = 0;
 
             foreach (var channelId in youTubeChannelIdArray)
             {
@@ -87,12 +88,11 @@ namespace YouTubeLister
 
                 if (feed == null) return youTubeVideos;
 
-                int channelIndex = 0;
 
                 foreach (SyndicationItem item in feed.Items.Where(c => c.PublishDate > maxDate))
                 {
                     VideoItem videoItem = new VideoItem();
-                    videoItem.ChannelName = youTubeChannelNameArray[channelIndex++];
+                    videoItem.ChannelName = youTubeChannelNameArray[channelIndex];
                     string thumbnailUrl = string.Empty;
                     string duration = string.Empty;
 
@@ -125,8 +125,12 @@ namespace YouTubeLister
 
                         youTubeVideos.Add(videoItem);
                     }
+
                 }
+
+                channelIndex++;
             }
+
 
             return youTubeVideos;
         }
