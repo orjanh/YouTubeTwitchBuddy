@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.ServiceModel.Syndication;
+using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using HtmlAgilityPack;
 using YouTubeLister.Models;
 
 namespace YouTubeLister
@@ -17,6 +22,32 @@ namespace YouTubeLister
             _uriFormat = ConfigHelper.GetYouTubeUriFormat();
         }
 
+        private void WriteChannelIdsToAppSettings(IEnumerable<string> channelIds)
+        {
+            var sb = new StringBuilder();
+
+            foreach (var channelId in channelIds)
+            {
+                sb.Append(channelId + "|");
+            }
+
+            Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            configuration.AppSettings.Settings["YouTubeChannelIDs"].Value = sb.ToString();
+            configuration.Save();
+
+            ConfigurationManager.RefreshSection("appSettings");
+        }
+
+        public string GetData(string uri)
+        {
+            var client = new WebClient { Proxy = null };
+            using (var data = client.OpenRead(uri))
+            {
+                var reader = new StreamReader(data);
+                return reader.ReadToEnd();
+            }
+        }
+
         public IEnumerable<VideoItem> FetchRecentYouTubeVideos(string channelNames, DateTime maxDate)
         {
             XNamespace media = "http://search.yahoo.com/mrss/";
@@ -24,20 +55,44 @@ namespace YouTubeLister
 
             if (string.IsNullOrEmpty(channelNames)) return youTubeVideos;
 
-            var youTubeChannelNameArray = channelNames.Split('|');            
+            var youTubeChannelNameArray = channelNames.Split('|');
 
-            foreach (var channelName in youTubeChannelNameArray)
+
+
+            var youTubeChannelIds = ConfigHelper.GetYouTubeChannelIds();
+            string[] youTubeChannelIdArray;
+
+            if (!string.IsNullOrEmpty(youTubeChannelIds))
             {
-                XmlReader reader = XmlReader.Create(string.Format(_uriFormat, channelName));
+                youTubeChannelIdArray = youTubeChannelIds.Split('|');
+
+                if (youTubeChannelIdArray.Length < youTubeChannelNameArray.Length)
+                {
+                    GetYouTubeChannelIds(youTubeChannelNameArray);
+                }
+            }
+            else
+            {
+                youTubeChannelIdArray = GetYouTubeChannelIds(youTubeChannelNameArray);
+            }
+
+
+
+
+            foreach (var channelId in youTubeChannelIdArray)
+            {
+                XmlReader reader = XmlReader.Create(string.Format(_uriFormat, channelId));
                 SyndicationFeed feed = SyndicationFeed.Load(reader);
                 reader.Close();
 
                 if (feed == null) return youTubeVideos;
 
+                int channelIndex = 0;
+
                 foreach (SyndicationItem item in feed.Items.Where(c => c.PublishDate > maxDate))
                 {
                     VideoItem videoItem = new VideoItem();
-                    videoItem.ChannelName = channelName;
+                    videoItem.ChannelName = youTubeChannelNameArray[channelIndex++];
                     string thumbnailUrl = string.Empty;
                     string duration = string.Empty;
 
@@ -51,7 +106,7 @@ namespace YouTubeLister
                             if (thumbnailElement != null) thumbnailUrl = thumbnailElement.FirstAttribute.Value;
 
                             var contentElement = xElement.Descendants().FirstOrDefault(item1 => item1.Name.LocalName == "content");
-                            if (contentElement != null) duration = contentElement.Attribute("duration").Value;
+                            if (contentElement != null && contentElement.Attribute("duration") != null) duration = contentElement.Attribute("duration").Value;
                         }
                     }
 
@@ -74,6 +129,37 @@ namespace YouTubeLister
             }
 
             return youTubeVideos;
+        }
+
+        private string[] GetYouTubeChannelIds(string[] youTubeChannelNameArray)
+        {
+            var youtubeChannelUriFormat = ConfigHelper.GetYouTubeChannelUriFormat();
+
+            var channelIds = new List<string>();
+
+            foreach (var youTubeChannelName in youTubeChannelNameArray)
+            {
+                //scrape the id for each channel
+
+                var channelPageMarkup = GetData(string.Format(youtubeChannelUriFormat, youTubeChannelName));
+
+                var channelPageMarkupDoc = new HtmlDocument();
+                channelPageMarkupDoc.LoadHtml(channelPageMarkup);
+                var channelIdNodes =
+                    channelPageMarkupDoc.DocumentNode.SelectNodes("//button[@data-channel-external-id]");
+
+                if (channelIdNodes != null)
+                {
+                    var channelId = channelIdNodes.FirstOrDefault();
+
+                    if (channelId != null)
+                        channelIds.Add(channelId.Attributes["data-channel-external-id"].Value);
+                }
+            }
+
+            WriteChannelIdsToAppSettings(channelIds);
+
+            return channelIds.ToArray();
         }
     }
 }

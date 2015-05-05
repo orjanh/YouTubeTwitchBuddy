@@ -25,7 +25,7 @@ namespace YouTubeLister
             YouTubeEngine = new YouTubeEngine();
 
             tbTwitchChannels.Text = ConfigHelper.GetTwitchChannels();
-            tbYouTubeChannels.Text = ConfigHelper.GetYouTubeChannels();
+            tbYouTubeChannels.Text = ConfigHelper.GetYouTubeChannelNames();
 
             Refresh();
         }
@@ -102,14 +102,24 @@ namespace YouTubeLister
 
         private static string GetFormattedTitle(string videoTitle, string duration)
         {
-            var durat = TimeSpan.FromSeconds(Convert.ToInt32(duration));
-            var title = string.Format("{0} ({1})", videoTitle,
-                string.Format("{0:D2}:{1:D2}:{2:D2}",
+            var durationString = string.Empty;
+
+            if (!string.IsNullOrEmpty(duration))
+            {
+                var durat = TimeSpan.FromSeconds(Convert.ToInt32(duration));
+
+                durationString = string.Format("({0})", GetFormattedTimeString(durat));
+            }
+
+            return string.Format("{0} {1}", videoTitle, durationString);
+        }
+
+        private static string GetFormattedTimeString(TimeSpan durat)
+        {
+                return string.Format("{0:D2}:{1:D2}:{2:D2}",
                     durat.Hours,
                     durat.Minutes,
-                    durat.Seconds));
-
-            return title;
+                    durat.Seconds);
         }
 
         private DateTime GetMaxDate()

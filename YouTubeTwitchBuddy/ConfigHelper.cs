@@ -20,7 +20,17 @@ namespace YouTubeLister
             return ConfigurationManager.AppSettings["YouTubeUriFormat"];
         }
 
-        public static string GetYouTubeChannels()
+        public static string GetYouTubeChannelUriFormat()
+        {
+            return ConfigurationManager.AppSettings["YouTubeChannelUriFormat"];
+        }
+
+        public static string GetYouTubeChannelIds()
+        {
+            return ConfigurationManager.AppSettings["YouTubeChannelsIDs"];
+        }
+
+        public static string GetYouTubeChannelNames()
         {
             return ConfigurationManager.AppSettings["YouTubeChannels"];
         }
