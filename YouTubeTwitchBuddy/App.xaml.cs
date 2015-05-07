@@ -1,4 +1,4 @@
-﻿namespace YouTubeLister
+﻿namespace YouTubeTwitchBuddy
 {
     /// <summary>
     /// Interaction logic for App.xaml

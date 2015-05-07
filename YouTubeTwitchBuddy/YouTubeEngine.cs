@@ -11,7 +11,7 @@ using System.Xml.Linq;
 using HtmlAgilityPack;
 using YouTubeLister.Models;
 
-namespace YouTubeLister
+namespace YouTubeTwitchBuddy
 {
     public class YouTubeEngine
     {
@@ -22,7 +22,7 @@ namespace YouTubeLister
             _uriFormat = ConfigHelper.GetYouTubeUriFormat();
         }
 
-        private void WriteChannelIdsToAppSettings(IEnumerable<string> channelIds)
+        private static void WriteChannelIdsToAppSettings(IEnumerable<string> channelIds)
         {
             var sb = new StringBuilder();
 
@@ -31,8 +31,15 @@ namespace YouTubeLister
                 sb.Append(channelId + "|");
             }
 
+            var channelsString = sb.ToString();
+
+            if (channelsString.EndsWith("|"))
+            {
+                channelsString = channelsString.Remove(channelsString.Length - 1);
+            }
+
             Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            configuration.AppSettings.Settings["YouTubeChannelIDs"].Value = sb.ToString();
+            configuration.AppSettings.Settings["YouTubeChannelIDs"].Value = channelsString;
             configuration.Save();
 
             ConfigurationManager.RefreshSection("appSettings");
@@ -57,26 +64,11 @@ namespace YouTubeLister
 
             var youTubeChannelNameArray = channelNames.Split('|');
 
-
-
             var youTubeChannelIds = ConfigHelper.GetYouTubeChannelIds();
-            string[] youTubeChannelIdArray;
 
-            if (!string.IsNullOrEmpty(youTubeChannelIds))
-            {
-                youTubeChannelIdArray = youTubeChannelIds.Split('|');
-
-                if (youTubeChannelIdArray.Length < youTubeChannelNameArray.Length)
-                {
-                    GetYouTubeChannelIds(youTubeChannelNameArray);
-                }
-            }
-            else
-            {
-                youTubeChannelIdArray = GetYouTubeChannelIds(youTubeChannelNameArray);
-            }
-
-
+            var youTubeChannelIdArray = NumIdsNotEqualToNumChannels(youTubeChannelIds, youTubeChannelNameArray) 
+                ? GetYouTubeChannelIds(youTubeChannelNameArray) 
+                : youTubeChannelIds.Split('|');
 
             int channelIndex = 0;
 
@@ -135,7 +127,12 @@ namespace YouTubeLister
             return youTubeVideos;
         }
 
-        private string[] GetYouTubeChannelIds(string[] youTubeChannelNameArray)
+        private static bool NumIdsNotEqualToNumChannels(string youTubeChannelIds, ICollection<string> youTubeChannelNameArray)
+        {
+            return string.IsNullOrEmpty(youTubeChannelIds) || youTubeChannelIds.Split('|').Length != youTubeChannelNameArray.Count;
+        }
+
+        private string[] GetYouTubeChannelIds(IEnumerable<string> youTubeChannelNameArray)
         {
             var youtubeChannelUriFormat = ConfigHelper.GetYouTubeChannelUriFormat();
 
@@ -149,15 +146,16 @@ namespace YouTubeLister
 
                 var channelPageMarkupDoc = new HtmlDocument();
                 channelPageMarkupDoc.LoadHtml(channelPageMarkup);
-                var channelIdNodes =
-                    channelPageMarkupDoc.DocumentNode.SelectNodes("//button[@data-channel-external-id]");
+                var channelIdNodes = channelPageMarkupDoc.DocumentNode.SelectNodes("//button[@data-channel-external-id]");
 
                 if (channelIdNodes != null)
                 {
                     var channelId = channelIdNodes.FirstOrDefault();
 
                     if (channelId != null)
+                    {
                         channelIds.Add(channelId.Attributes["data-channel-external-id"].Value);
+                    }
                 }
             }
 

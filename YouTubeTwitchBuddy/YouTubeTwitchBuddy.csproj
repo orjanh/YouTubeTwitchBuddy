@@ -66,10 +66,9 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ConfigHelper.cs" />
     <Compile Include="Models\Twitch\Channel.cs" />
     <Compile Include="Models\Twitch\Links.cs" />
@@ -81,11 +80,11 @@
     <Compile Include="StreamCustomizer.xaml.cs">
       <DependentUpon>StreamCustomizer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="YouTubeEngine.cs" />
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
     <Page Include="StreamCustomizer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

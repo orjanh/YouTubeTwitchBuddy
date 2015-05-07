@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
 
-namespace YouTubeLister
+namespace YouTubeTwitchBuddy
 {
     public class ConfigHelper
     {
@@ -27,7 +27,7 @@ namespace YouTubeLister
 
         public static string GetYouTubeChannelIds()
         {
-            return ConfigurationManager.AppSettings["YouTubeChannelsIDs"];
+            return ConfigurationManager.AppSettings["YouTubeChannelIDs"];
         }
 
         public static string GetYouTubeChannelNames()

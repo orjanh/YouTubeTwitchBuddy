@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using Newtonsoft.Json;
+using YouTubeLister;
 using YouTubeLister.Models;
 using YouTubeLister.Models.Twitch;
 
-namespace YouTubeLister
+namespace YouTubeTwitchBuddy
 {
     public class TwitchEngine
     {
