@@ -8,7 +8,7 @@
         public string _id { get; set; }
         public string recorded_at { get; set; }
         public string game { get; set; }
-        public int length { get; set; }
+        public string length { get; set; }
         public string preview { get; set; }
         public string url { get; set; }
         public int views { get; set; }

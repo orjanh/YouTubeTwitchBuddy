@@ -106,12 +106,24 @@ namespace YouTubeTwitchBuddy
 
             if (!string.IsNullOrEmpty(duration))
             {
-                var durat = TimeSpan.FromSeconds(Convert.ToInt32(duration));
+                var durat = TimeSpan.FromSeconds(Convert.ToInt32(RemoveDots(duration)));
 
                 durationString = string.Format("({0})", GetFormattedTimeString(durat));
             }
 
             return string.Format("{0} {1}", videoTitle, durationString);
+        }
+
+        private static object RemoveDots(string duration)
+        {
+            if (duration.Contains('.'))
+            {
+                var index = duration.IndexOf('.');
+
+                duration = duration.Substring(0, index);
+            }
+
+            return duration;
         }
 
         private static string GetFormattedTimeString(TimeSpan durat)
