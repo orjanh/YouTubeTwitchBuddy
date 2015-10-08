@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -164,5 +165,23 @@ namespace YouTubeTwitchBuddy
             int daysBack = Convert.ToInt32(tbNumDaysBack.Text) - 1;
             tbNumDaysBack.Text = daysBack.ToString(CultureInfo.InvariantCulture);
         }
+
+        private void SaveYouTubeChannels(object sender, RoutedEventArgs e)
+        {
+            SaveChannels("YouTubeChannels", tbYouTubeChannels.Text);
+        }
+
+        private void SaveTwitchChannels(object sender, RoutedEventArgs e)
+        {
+            SaveChannels("TwitchChannels", tbTwitchChannels.Text);
+        }
+
+        private static void SaveChannels(string appSetting, string data)
+        {
+            Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            configuration.AppSettings.Settings[appSetting].Value = data;
+            configuration.Save();
+        }
+
     }
 }
